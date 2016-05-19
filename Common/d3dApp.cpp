@@ -440,15 +440,14 @@ bool D3DApp::InitDirect3D()
 	// Try to create the device, require DirectX 12 support.
 	if (SUCCEEDED(D3D12CreateDevice(pBiggestAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&pDevice))))
 	{
-		md3dDevice = pDevice.Detach();
+		md3dDevice = pDevice;
 	}
 
 	// Fallback to WARP device.
 	if (md3dDevice == nullptr)
 	{
 		ThrowIfFailed(mdxgiFactory->EnumWarpAdapter(IID_PPV_ARGS(&pAdapter)));
-		ThrowIfFailed(D3D12CreateDevice(pAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&pDevice)));
-		md3dDevice = pDevice.Detach();
+		ThrowIfFailed(D3D12CreateDevice(pAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&md3dDevice)));
 	}
 
 	ThrowIfFailed(md3dDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE,
