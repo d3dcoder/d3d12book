@@ -121,6 +121,8 @@ private:
 	// Render items divided by PSO.
 	std::vector<RenderItem*> mOpaqueRitems;
 
+	UINT mInstanceCount = 0;
+
 	bool mFrustumCullingEnabled = true;
 
 	BoundingFrustum mCamFrustum;
@@ -814,7 +816,7 @@ void InstancingAndCullingApp::BuildFrameResources()
     for(int i = 0; i < gNumFrameResources; ++i)
     {
         mFrameResources.push_back(std::make_unique<FrameResource>(md3dDevice.Get(),
-            1, (UINT)mAllRitems.size(), (UINT)mMaterials.size()));
+            1, mInstanceCount, (UINT)mMaterials.size()));
     }
 }
 
@@ -902,7 +904,9 @@ void InstancingAndCullingApp::BuildRenderItems()
 
 	// Generate instance data.
 	const int n = 5;
-	skullRitem->Instances.resize(n*n*n);
+	mInstanceCount = n*n*n;
+	skullRitem->Instances.resize(mInstanceCount);
+
 
 	float width = 200.0f;
 	float height = 200.0f;
