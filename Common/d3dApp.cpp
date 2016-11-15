@@ -423,24 +423,43 @@ bool D3DApp::InitDirect3D()
 }
 #endif
 
+	Microsoft::WRL::ComPtr<ID3D12Device> pDevice;
+	Microsoft::WRL::ComPtr<IDXGIAdapter1> pAdapter;
+
+	SIZE_T biggestSize = 0;
+	Microsoft::WRL::ComPtr<IDXGIAdapter1> pBiggestAdapter;
+
+	DXGI_ADAPTER_DESC1 desc;
+
 	ThrowIfFailed(CreateDXGIFactory1(IID_PPV_ARGS(&mdxgiFactory)));
 
-	// Try to create hardware device.
-	HRESULT hardwareResult = D3D12CreateDevice(
-		nullptr,             // default adapter
-		D3D_FEATURE_LEVEL_11_0,
-		IID_PPV_ARGS(&md3dDevice));
+	// Find the adapter with largest video memory in case we have multiple different adapters, like on some laptops.
+	for (uint32_t Idx = 0; DXGI_ERROR_NOT_FOUND != mdxgiFactory->EnumAdapters1(Idx, &pAdapter); ++Idx)
+	{
+		pAdapter->GetDesc1(&desc);
+		// We don't want software adapters.
+		if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
+		{
+			continue;
+		}
+		if (desc.DedicatedVideoMemory > biggestSize)
+		{
+			pBiggestAdapter = pAdapter;
+			biggestSize = desc.DedicatedVideoMemory;
+		}
+	}
+
+	// Try to create the device, require DirectX 12 support.
+	if (SUCCEEDED(D3D12CreateDevice(pBiggestAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&pDevice))))
+	{
+		md3dDevice = pDevice;
+	}
 
 	// Fallback to WARP device.
-	if(FAILED(hardwareResult))
+	if (md3dDevice == nullptr)
 	{
-		ComPtr<IDXGIAdapter> pWarpAdapter;
-		ThrowIfFailed(mdxgiFactory->EnumWarpAdapter(IID_PPV_ARGS(&pWarpAdapter)));
-
-		ThrowIfFailed(D3D12CreateDevice(
-			pWarpAdapter.Get(),
-			D3D_FEATURE_LEVEL_11_0,
-			IID_PPV_ARGS(&md3dDevice)));
+		ThrowIfFailed(mdxgiFactory->EnumWarpAdapter(IID_PPV_ARGS(&pAdapter)));
+		ThrowIfFailed(D3D12CreateDevice(pAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&md3dDevice)));
 	}
 
 	ThrowIfFailed(md3dDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE,
