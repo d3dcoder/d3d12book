@@ -51,7 +51,7 @@ SamplerState gsamAnisotropicWrap  : register(s4);
 SamplerState gsamAnisotropicClamp : register(s5);
 SamplerComparisonState gsamShadow : register(s6);
 
-// Constant data that varies per frame.
+// Constant data that varies per object.
 cbuffer cbPerObject : register(b0)
 {
     float4x4 gWorld;
