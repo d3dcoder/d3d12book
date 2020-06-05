@@ -253,8 +253,8 @@ void VecAddCSApp::Draw(const GameTimer& gt)
     mCommandList->RSSetScissorRects(1, &mScissorRect);
 
     // Indicate a state transition on the resource usage.
-//	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
-//		D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+    mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
+        D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
     // Clear the back buffer and depth buffer.
     mCommandList->ClearRenderTargetView(CurrentBackBufferView(), (float*)&mMainPassCB.FogColor, 0, nullptr);
@@ -266,8 +266,8 @@ void VecAddCSApp::Draw(const GameTimer& gt)
 
 
     // Indicate a state transition on the resource usage.
-	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
-		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
+    mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
+        D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
 
     // Done recording commands.
     ThrowIfFailed(mCommandList->Close());
@@ -354,7 +354,7 @@ void VecAddCSApp::DoComputeWork()
 
 	// Schedule to copy the data to the default buffer to the readback buffer.
 	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mOutputBuffer.Get(),
-		D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_SOURCE));
+		D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_SOURCE));
 
 	mCommandList->CopyResource(mReadBackBuffer.Get(), mOutputBuffer.Get());
 
